@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head >
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+</head>
+<body    >
+
+<div   ng-app="myApp" ng-controller="main" >
+
+<div>
+ 
+ <a class="text-center" href="/index.html" > conference list </a>
+
+ <p class="text-center " > create conference </p> 
+ <form class="text-center" ng-submit="create_conference()" >
+	
+	<input ng-model='conference_name' placeholder="conference name" >   </input >
+
+	<input ng-model='conference_date' placeholder="conference date">   </input >
+	<input ng-model='conference_time' placeholder="conference time" >   </input >
+
+	<input type="submit" value="create conference" >  </input >
+ </form>
+ 
+  <p class="text-center" > create conference room </p> 
+  <form class="text-center" ng-submit="create_conference_room()" >
+	<input ng-model='conference_room_name' placeholder="room name" >   </input >
+
+	<input ng-model='conference_room_location' placeholder="room location" >   </input >
+	<input ng-model='conference_room_max_seats' placeholder="max seats" >   </input >
+
+	<input type="submit" value="add conference room" >  </input >
+ </form>
+ 
+
+ 
+</div>
+
+<div>
+<table class="table table-bordered" > 
+	<tr>
+			<th class="text-center" > Conference list </th>
+	</tr>
+	<tr class="text-center"  ng-repeat="conference in conferences">
+		<td> <a class="col-md-6" href="#conference/{{conference.conference_primary_key}}" > {{ conference.conference_name }} </a>
+		<button class="col-md-1" ng-click="delete_conference(conference.conference_primary_key , $index )"> delete </button> </td>
+	</tr>
+
+</table>
+</div>
+
+
+
+
+<div ng-view></div>
+
+
+
+
+
+</div>
+
+
+
+<script type="text/javascript"  src="/node_modules/angular/angular.js"></script>
+<script type="text/javascript"  src="/node_modules/angular-route/angular-route.js"></script>
+<script type="text/javascript"  src="/node_modules/angular-sanitize/angular-sanitize.js"></script>
+<link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css" >
+
+<script >
+
+		var app = angular.module( 'myApp' , ['ngRoute' , 'ngSanitize'] );
+		
+		app.controller( 'main', ['$scope', '$http' ,  function($scope , $http  ) {
+	
+		
+		$scope.get_all_conferences = function(){
+	
+				$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+				$scope.conferences = [] ;
+				var object = {
+					command: "get_all_conferences"
+				};
+		
+				$http.post("http://localhost:8080/Conference/receive" , object )
+					.then( function( response ){
+					
+					//	$scope.server_response =  response.data.conferences.all_conferences ;
+						console.log(response.data.result);
+						$scope.conferences = response.data.conferences.all_conferences ;
+						
+						
+						angular.forEach($scope.conferences, function(item){
+						//		console.log(item.conference_primary_key);
+								console.log(item.conference_name);
+
+							   
+						});
+				});
+	
+		};
+		
+		$scope.create_conference = function() {
+		
+				var new_conference = {
+					command: "create_conference" ,
+					conference_name : $scope.conference_name  ,
+					conference_date : $scope.conference_date , 
+					conference_time : $scope.conference_time 
+				} ;
+				
+				if(	$scope.conference_name.length <= 150	){
+		
+					$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+			
+					$http.post("http://localhost:8080/Conference/receive" , new_conference )
+						.then( function( response ){
+						//	$scope.server_response =  response.data ;
+							console.log(response.data.result);
+							console.log(response.data.conference_primary_key);
+							
+							$scope.get_all_conferences();
+							
+							
+							
+					});
+				
+				}else{
+				
+				}
+				
+		};
+		
+		$scope.delete_conference = function( primary_key , index ){
+		
+			console.log( primary_key );
+			console.log( index );
+			$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+			
+			var object = {
+					command: "delete_conference",
+					primary_key: primary_key
+			};
+		
+				$http.post("http://localhost:8080/Conference/receive" , object )
+					.then( function( response ){
+						console.log(response);
+						$scope.conferences.splice(index, 1);
+				});
+		
+		};
+		
+		$scope.create_conference_room = function(){
+		
+			var new_conference_room = {
+					command: "create_conference_room" ,
+					conference_room_name : $scope.conference_room_name  ,
+					conference_room_location : $scope.conference_room_location , 
+					conference_room_max_seats : $scope.conference_room_max_seats 
+				} ;
+				
+				
+				if ( !isNaN($scope.conference_room_max_seats ) && angular.isNumber(+$scope.conference_room_max_seats
+					&& $scope.conference_room_max_seats !="" ) ) {
+				
+					$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+			
+					$http.post("http://localhost:8080/Conference/receive" , new_conference_room )
+						.then( function( response ){
+						//	$scope.server_response =  response.data ;
+							console.log(response.data.result);
+							console.log(response.data.conference_room_primary_key);
+							
+							
+							
+					});
+				
+				} else {
+				
+				}
+		
+		}
+		
+		
+		$scope.get_all_conferences();	
+ 
+		
+	}]) ;
+		
+		app.controller('Conference',  function ($scope, $routeParams , $http ) {
+			
+			console.log( $routeParams );
+			
+				$scope.params = $routeParams;
+				console.log( $scope.params.conference_primary_key  );
+				 
+				$scope.get_conference_info = function() { 
+				 
+					var conference = {
+						command: "conference_info" ,
+						primary_key : $scope.params.conference_primary_key 
+					} ;
+					
+					
+					$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+			
+					$http.post("http://localhost:8080/Conference/receive" , conference )
+						.then( function( response ){
+						//	$scope.server_response =  response.data ;
+							console.log(response.data.conference );
+							$scope.conference_html = "<td> "+response.data.conference.conference_name +"</td> <td> "+ 
+							response.data.conference.conference_date +" </td><td> " +response.data.conference.conference_time +"</td> " +
+							"<td>" + response.data.conference.conference_perticipant_number + " </td> ";
+						
+							
+					});
+				
+				};
+				 
+				 
+				$scope.add_person = function() { 
+				
+					
+					var new_person = {
+						command: "add_person_to_conference" ,
+						person_name : $scope.person_name  ,
+						person_birth_date : $scope.person_birth_date , 
+						conference_primary_key : $scope.params.conference_primary_key
+					} ;
+					
+					console.log( new_person );
+					
+					$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+		
+					$http.post("http://localhost:8080/Conference/receive" , new_person )
+						.then( function( response ){
+						
+						//	$scope.server_response =  response.data ;
+							console.log("add person response");
+							console.log(response.data);
+							console.log(response.data.person);
+							
+							$scope.get_conference_info();
+							$scope.get_conference_room_list();
+							$scope.get_person_list();
+							
+					});
+				 
+				 
+				};
+				
+				$scope.get_person_list = function(){
+	
+						$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+						$scope.person_list = [] ;
+						var object = {
+							command: "get_person_list" ,
+							conference_primary_key :  $scope.params.conference_primary_key 
+						};
+				
+						$http.post("http://localhost:8080/Conference/receive" , object )
+							.then( function( response ){
+								console.log("get person list ");
+								$scope.person_list =  response.data.person_list.person_list  ;
+								console.log( response.data.person_list );
+								console.log( response.data.person_list.person_list );
+								
+								
+								angular.forEach($scope.person_list, function(item){
+								
+										console.log(item.person_name);
+
+									   
+								});
+								
+								
+								
+								
+						});
+			
+				};
+				
+				$scope.delete_person = function( person_primary_key , index ){
+				
+					console.log( person_primary_key );
+					console.log( index );
+					
+					$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+			
+					var object = {
+							command: "delete_person",
+							person_primary_key: person_primary_key , 
+							conference_primary_key : $scope.params.conference_primary_key
+					};
+			
+					$http.post("http://localhost:8080/Conference/receive" , object )
+						.then( function( response ){
+							console.log(response);
+							$scope.person_list.splice(index, 1);
+							
+							$scope.get_conference_info();
+							$scope.get_conference_room_list();
+					});
+					
+				};
+				
+				$scope.get_conference_room_list = function(){
+				
+					$scope.conference_room_list = [] ;
+					
+					var object = {
+							command: "conference_room_list",
+							conference_primary_key : $scope.params.conference_primary_key
+					};
+					
+					$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+					
+					$http.post("http://localhost:8080/Conference/receive" , object )
+						.then( function( response ){
+							console.log("conference room list");
+							
+							console.log( response.data.conference_room_list );
+							$scope.conference_room_list = response.data.conference_room_list.conference_room_list ;
+							
+					});
+				
+				
+				};
+				
+				$scope.get_conference_info();
+				$scope.get_person_list();
+				$scope.get_conference_room_list();
+				 
+				 
+		});
+		
+		app.config([ '$routeProvider' , function($routeProvider, $locationProvider) {
+		  $routeProvider
+		  
+				
+				.when('/conference/:conference_primary_key', {
+					templateUrl : 'conference.html' ,
+					controller  : 'Conference'
+				})
+				
+	
+		}]);
+		
+		
+		
+		
+		
+		
+
+
+</script>
+
+
+</body>
+
+</html>

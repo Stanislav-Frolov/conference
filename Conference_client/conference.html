@@ -1,0 +1,53 @@
+<div>
+
+<p class="text-center " >  conference info  </p>
+<table class="table table-bordered" >
+<tr> 
+<th> conference name </th>
+<th> conference date </th>
+<th> conference time </th>
+<th> conference number of participants </th>
+ </tr>
+<tr ng-bind-html="conference_html" > </tr>
+</table class="table table-bordered" >
+
+<p class="text-center " >  add person to conference </p>
+ <form class="text-center"  ng-submit="add_person()" >
+	
+	<input ng-model='person_name' >   </input >
+
+	<input ng-model='person_birth_date' >   </input >
+
+	<input type="submit" value="add person to conference" >  </input >
+ </form>
+
+ <p class="text-center " >  list of participants  </p>
+ <table class="table table-bordered" >
+	<tr > <th> person name </th>  <th> person birth date </th>  </tr>
+	<tr  ng-repeat="person in person_list">
+		<td> <p > {{ person.person_name }} </p > </td> <td> {{ person.person_birth_date }}  </td> 
+		<td> <button ng-click="delete_person(person.person_primary_key , $index )"> remove from conference </button> </td>
+	</tr>
+</table >
+ 
+<p class="text-center " >  list of suitable conference rooms  </p>
+<table class="table table-bordered" >
+	<tr > <th> conference room name </th>  <th> conference room location </th>  <th> conference room max seats </th>  </tr>
+	<tr  ng-repeat="conference_room in conference_room_list">
+		<td> {{ conference_room.conference_room_name }}  </td> <td> {{ conference_room.conference_room_location }}  </td> 
+		<td> {{ conference_room.conference_room_max_seats }}</td>
+	</tr>
+</table >
+ 
+</div> 
+
+
+
+<script>
+
+
+	
+	
+
+
+</script>
